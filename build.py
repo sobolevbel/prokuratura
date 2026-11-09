@@ -117,6 +117,12 @@ SUBSCRIBE = Template("""    <section class="card" id="subskrypcja">
       <p class="signup-actions"><a class="signup-button" href="$form_url" rel="noreferrer">$subscribe_action</a> <a href="./privacy.html#newsletter">$privacy_title</a></p>
     </section>""")
 
+SUBSCRIBE_UNAVAILABLE = Template("""    <section class="card" id="subskrypcja">
+      <h2>$subscription_title</h2>
+      <p>$subscribe_unavailable</p>
+      <p><a href="./privacy.html#newsletter">$privacy_title</a></p>
+    </section>""")
+
 PRIVACY = Template("""<!doctype html>
 <html lang="$lang">
 <head>
@@ -214,6 +220,7 @@ def build():
     with (ROOT / "privacy.toml").open("rb") as file:
         privacy = tomllib.load(file)
     email, form_url = subscription_settings(privacy["settings"])
+    subscribe_template = SUBSCRIBE if privacy["settings"].get("subscriptions_open", True) else SUBSCRIBE_UNAVAILABLE
 
     for code, translations in content.items():
         base = "./" if code == "pl" else "../"
@@ -238,7 +245,7 @@ def build():
             repo_url=REPO, alternates=alternate_links(),
             language_links=language_links(code, base), images="\n        ".join(images),
             privacy_title=policy["privacy_title"],
-            subscribe=SUBSCRIBE.substitute(policy, form_url=escape(form_url)) if form_url else "",
+            subscribe=subscribe_template.substitute(policy, form_url=escape(form_url)) if form_url else "",
         ), encoding="utf-8")
         contact = (
             f'{policy["email_label"]} · <a href="mailto:{escape(email)}">{escape(email)}</a>'
