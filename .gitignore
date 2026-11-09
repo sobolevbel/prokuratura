@@ -1,0 +1,6 @@
+# Original correspondence and attachments stay local.
+/*.pdf
+/*.zip
+/*.jpg
+.DS_Store
+__pycache__/
