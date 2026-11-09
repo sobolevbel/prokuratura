@@ -15,9 +15,11 @@ Publikuj wyłącznie kopie przeznaczone do udostępnienia. Oryginały koresponde
 
 Strona prowadzi do publicznego formularza beehiiv. Serwis obsługuje potwierdzenie adresu, listę subskrybentów, wysyłkę i wypisanie.
 
-1. W beehiiv ustaw nazwę „Aktualizacje sprawy” i zostaw domyślny adres pocztowy dostawcy w stopce. Adres projektu może służyć do odpowiedzi. Sprawdź [umowę o ochronie danych](https://www.beehiiv.com/dpa).
+1. W beehiiv zostaw domyślny adres pocztowy dostawcy w stopce. Adres projektu może służyć do odpowiedzi. Sprawdź [umowę o ochronie danych](https://www.beehiiv.com/dpa).
 2. Włącz [Double Opt-in Email](https://www.beehiiv.com/support/article/13081072798743-double-opt-in-and-smart-nudge-how-they-work-and-why-they-matter) w Settings → Emails → Preset Emails. Użyj jednego pola e-mail, opisz, czego dotyczy subskrypcja, i dodaj na formularzu link do polityki prywatności. Zostaw wyłączone rekomendacje i reklamy.
 3. Sprawdź na własnych adresach zapis, przejście z Pending do Active po kliknięciu w link, treść i nagłówki wiadomości oraz adres pocztowy w stopce. Wypisanie z listy sprawdź na rzeczywistej wysyłce wyłącznie do testowych subskrybentów, ponieważ podgląd nie odtwarza całego procesu.
 4. W [`privacy.toml`](privacy.toml) ustaw `contact_email` i `beehiiv_form_url`, a następnie uruchom `python3 build.py`. Pusty URL ukrywa zapis i część polityki dotyczącą subskrypcji. Zmiany publikuj po sprawdzeniu formularza i treści polityki.
 
-Po aktualizacji strony opublikuj w beehiiv krótką wiadomość z linkiem do aktualizacji. Wysyłaj ją tylko do aktywnych subskrybentów. Po wypisaniu zachowaj jedynie dane potrzebne do zablokowania dalszej wysyłki.
+Przed rozpoczęciem regularnych wysyłek ustal z beehiiv, czy można wyłączyć pomiar otwarć i kliknięć, i sprawdź źródło otrzymanej wiadomości. Zgoda na subskrypcję dotyczy wysyłki aktualizacji. Opcjonalna analityka wymaga osobnej oceny i, gdy jest wymagana, odrębnej zgody.
+
+Po aktualizacji strony przygotuj w beehiiv krótką wiadomość z linkiem do aktualizacji i polityki prywatności. Wysyłaj ją tylko do aktywnych subskrybentów. Raz w miesiącu przejrzyj niepotwierdzone zapisy i usuń te, dla których potwierdzenie nie jest już potrzebne. Po wypisaniu zachowaj tylko dane potrzebne do zablokowania dalszej wysyłki.

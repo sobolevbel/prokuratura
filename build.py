@@ -114,7 +114,7 @@ $subscribe
 SUBSCRIBE = Template("""    <section class="card" id="subskrypcja">
       <h2>$subscription_title</h2>
       <p>$subscribe_intro</p>
-      <p><a href="$form_url" rel="noreferrer">$subscribe_action</a> · <a href="./privacy.html#newsletter">$privacy_title</a></p>
+      <p class="signup-actions"><a class="signup-button" href="$form_url" rel="noreferrer">$subscribe_action</a> <a href="./privacy.html#newsletter">$privacy_title</a></p>
     </section>""")
 
 PRIVACY = Template("""<!doctype html>
@@ -139,6 +139,7 @@ PRIVACY = Template("""<!doctype html>
   <main class="wrap">
     <article class="card document">
       <h1>$privacy_title</h1>
+      <p class="date">$policy_date</p>
       <p>$controller</p>
       <p>$privacy_contact</p>
       <h2>$hosting_title</h2>
@@ -146,6 +147,9 @@ PRIVACY = Template("""<!doctype html>
       <p>$cookies_note</p>
       <p><a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">$github_policy</a></p>
 $newsletter_policy
+      <h2>$correspondence_title</h2>
+      <p>$correspondence_note</p>
+      <p><a href="https://policies.google.com/privacy">$google_policy</a></p>
       <h2>$rights_title</h2>
       <p>$rights_note</p>
       <p><a href="https://www.uodo.gov.pl/526">$complaint</a></p>
@@ -159,7 +163,7 @@ NEWSLETTER_POLICY = Template("""      <section id="newsletter">
         <h2>$subscription_title</h2>
         <p>$subscription_data</p>
         <p>$subscription_provider</p>
-        <p><a href="https://www.beehiiv.com/dpa">beehiiv · Data Protection Addendum</a></p>
+        <p><a href="https://www.beehiiv.com/dpa">beehiiv · Data Protection Addendum</a> · <a href="https://www.beehiiv.com/privacy">$beehiiv_policy</a></p>
         <p>$subscription_retention</p>
       </section>""")
 
