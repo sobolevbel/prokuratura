@@ -1,4 +1,5 @@
 """Generate the five static language editions for GitHub Pages."""
+from datetime import date
 from html import escape
 from pathlib import Path
 from string import Template
@@ -14,6 +15,14 @@ LANGUAGES = {
     "be": "Беларуская",
     "uk": "Українська",
     "ru": "Русский",
+}
+
+MONTHS = {
+    "pl": "stycznia lutego marca kwietnia maja czerwca lipca sierpnia września października listopada grudnia",
+    "en": "January February March April May June July August September October November December",
+    "be": "студзеня лютага сакавіка красавіка мая чэрвеня ліпеня жніўня верасня кастрычніка лістапада снежня",
+    "uk": "січня лютого березня квітня травня червня липня серпня вересня жовтня листопада грудня",
+    "ru": "января февраля марта апреля мая июня июля августа сентября октября ноября декабря",
 }
 
 PAGE = Template("""<!doctype html>
@@ -57,7 +66,7 @@ PAGE = Template("""<!doctype html>
       <p>$status_note</p>
       <dl>
         <div><dt>$recipient</dt><dd>$office</dd></div>
-        <div><dt>$updated</dt><dd><time datetime="2026-11-09">$as_of</time></dd></div>
+        <div><dt>$updated</dt><dd><time datetime="$as_of_iso">$as_of</time></dd></div>
       </dl>
     </section>
     <section class="card" id="chronologia">
@@ -116,6 +125,22 @@ def build():
     with (ROOT / "content.toml").open("rb") as file:
         content = tomllib.load(file)
 
+    as_of_iso = content.pop("as_of_iso", None)
+    try:
+        as_of = date.fromisoformat(as_of_iso)
+    except (TypeError, ValueError):
+        raise ValueError("as_of_iso must be a valid date string in YYYY-MM-DD format") from None
+    if as_of.isoformat() != as_of_iso:
+        raise ValueError("as_of_iso must use YYYY-MM-DD")
+
+    for code in LANGUAGES:
+        month = MONTHS[code].split()[as_of.month - 1]
+        expected = f"{as_of.day} {month} {as_of.year}"
+        if content.get(code, {}).get("as_of") != expected:
+            raise ValueError(
+                f"{code}.as_of must be {expected!r} to match as_of_iso={as_of_iso}"
+            )
+
     alternates = "\n  ".join(
         f'<link rel="alternate" hreflang="{code}" href="{URL}{language_path(code)}">'
         for code in LANGUAGES
@@ -146,7 +171,7 @@ def build():
         directory.mkdir(parents=True, exist_ok=True)
         (directory / "index.html").write_text(PAGE.substitute(
             labels, lang=code, base=base, url=URL + language_path(code),
-            repo_url=REPO, alternates=alternates,
+            repo_url=REPO, alternates=alternates, as_of_iso=as_of_iso,
             language_links="\n        ".join(links), images="\n        ".join(images),
         ), encoding="utf-8")
 
