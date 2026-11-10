@@ -1,5 +1,5 @@
 """Generate the five static language editions for GitHub Pages."""
-from datetime import date
+from datetime import date, datetime
 from html import escape
 from pathlib import Path
 from string import Template
@@ -24,6 +24,16 @@ MONTHS = {
     "uk": "січня лютого березня квітня травня червня липня серпня вересня жовтня листопада грудня",
     "ru": "января февраля марта апреля мая июня июля августа сентября октября ноября декабря",
 }
+
+EVENTS = (
+    (datetime.fromisoformat("2026-11-07T18:23:51+01:00"), "odbior", "delivered", "delivery_note"),
+    (datetime.fromisoformat("2026-11-07T18:23:49+01:00"), "nadanie", "sent", "sent_note"),
+)
+
+EVENT = Template("""        <li id="$day-$slug">
+          <time class="date" datetime="$timestamp">$label</time>
+          <div><h3>$title</h3><p>$note</p></div>
+        </li>""")
 
 PAGE = Template("""<!doctype html>
 <html lang="$lang">
@@ -72,14 +82,7 @@ PAGE = Template("""<!doctype html>
     <section class="card" id="chronologia">
       <h2>$timeline</h2>
       <ol class="timeline">
-        <li id="2026-11-07-odbior">
-          <time class="date" datetime="2026-11-07T18:23:51+01:00">$date</time>
-          <div><h3>$delivered</h3><p>$delivery_note</p></div>
-        </li>
-        <li id="2026-11-07-nadanie">
-          <time class="date" datetime="2026-11-07T18:23:49+01:00">$date</time>
-          <div><h3>$sent</h3><p>$sent_note</p></div>
-        </li>
+$events
       </ol>
     </section>
     <section class="card" id="kontekst">
@@ -121,6 +124,11 @@ def language_path(code):
     return "" if code == "pl" else f"{code}/"
 
 
+def format_date(value, code):
+    month = MONTHS[code].split()[value.month - 1]
+    return f"{value.day} {month} {value.year}"
+
+
 def build():
     with (ROOT / "content.toml").open("rb") as file:
         content = tomllib.load(file)
@@ -134,8 +142,7 @@ def build():
         raise ValueError("as_of_iso must use YYYY-MM-DD")
 
     for code in LANGUAGES:
-        month = MONTHS[code].split()[as_of.month - 1]
-        expected = f"{as_of.day} {month} {as_of.year}"
+        expected = format_date(as_of, code)
         if content.get(code, {}).get("as_of") != expected:
             raise ValueError(
                 f"{code}.as_of must be {expected!r} to match as_of_iso={as_of_iso}"
@@ -146,7 +153,9 @@ def build():
         for code in LANGUAGES
     ) + f'\n  <link rel="alternate" hreflang="x-default" href="{URL}">'
 
-    for code, translations in content.items():
+    pages = {}
+    for code in LANGUAGES:
+        translations = content[code]
         base = "./" if code == "pl" else "../"
         links = []
         for target, name in LANGUAGES.items():
@@ -167,13 +176,23 @@ def build():
             )
 
         labels = {key: escape(value) for key, value in translations.items() if key != "captions"}
-        directory = SITE / language_path(code)
-        directory.mkdir(parents=True, exist_ok=True)
-        (directory / "index.html").write_text(PAGE.substitute(
+        events = "\n".join(
+            EVENT.substitute(
+                day=timestamp.date().isoformat(), slug=slug, timestamp=timestamp.isoformat(),
+                label=format_date(timestamp.date(), code), title=labels[title], note=labels[note],
+            )
+            for timestamp, slug, title, note in EVENTS
+        )
+        path = SITE / language_path(code) / "index.html"
+        pages[path] = PAGE.substitute(
             labels, lang=code, base=base, url=URL + language_path(code),
             repo_url=REPO, alternates=alternates, as_of_iso=as_of_iso,
-            language_links="\n        ".join(links), images="\n        ".join(images),
-        ), encoding="utf-8")
+            language_links="\n        ".join(links), images="\n        ".join(images), events=events,
+        )
+
+    for path, html in pages.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(html, encoding="utf-8")
 
 
 if __name__ == "__main__":
